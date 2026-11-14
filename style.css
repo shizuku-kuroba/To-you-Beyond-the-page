@@ -4,6 +4,9 @@
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-400.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-500.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-600.woff2') format('woff2');font-style:normal;font-weight:600;font-display:swap}
+/* Supplement (Noto Serif TC, OFL 1.1): glyphs added after the main subset was built, merged into the same family by unicode-range. */
+@font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-Supp-400.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap;unicode-range:U+61F7,U+6B65,U+6311,U+6230}
+@font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-Supp-500.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap;unicode-range:U+61F7,U+6B65,U+6311,U+6230}
 /* Title-only subset (Noto Serif TC 500, OFL 1.1): the glyphs of 致彼方的你 and the research title, so they render in the same serif on every OS. */
 @font-face{font-family:'Noto Serif TC Title';src:url('fonts/NotoSerifTC-Title-500.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
 
