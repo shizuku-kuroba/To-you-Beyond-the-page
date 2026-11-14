@@ -12,18 +12,21 @@ const plate=initPlate(document.querySelector('.plate-canvas'));
 // GitHub Pages build: config.js sets the Google Apps Script /exec URL. text/plain avoids a CORS preflight,
 // which Apps Script cannot answer; the redirected reply is readable cross-origin.
 const ENDPOINT=(window.W05_ENDPOINT||'').trim();
-function postToSheet(){return fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:submissionId,answers}),redirect:'follow'})}
+function postToSheet(){return fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload()),redirect:'follow'})}
+// duration_sec: seconds from first entering Part 1 to pressing submit (wall clock, so it survives a refresh).
+let startedAt=0;
+function payload(){const d=startedAt?Math.round((Date.now()-startedAt)/1000):null;return {id:submissionId,answers,duration:Number.isInteger(d)&&d>=0?d:null}}
 const PLATES=[['I','The Portrait'],['II','Attachment'],['III','Support'],['IV','Confidence']];
 const milestones=new Set(),completedPlates=new Set();
 // Autosave: progress lives in this tab's sessionStorage only — it survives a refresh or app switch,
 // is wiped when the tab closes, and is cleared after a successful submit. The same submission ID is
 // reused after a refresh so a retried submit can never create a second row.
 const SAVE_KEY='w05-progress';let restored=false;
-function saveProgress(){try{if(step>5){sessionStorage.removeItem(SAVE_KEY);return}sessionStorage.setItem(SAVE_KEY,JSON.stringify({v:1,step,answers,gate,id:submissionId}))}catch{}}
+function saveProgress(){try{if(step>5){sessionStorage.removeItem(SAVE_KEY);return}sessionStorage.setItem(SAVE_KEY,JSON.stringify({v:1,step,answers,gate,id:submissionId,startedAt}))}catch{}}
 try{const s=JSON.parse(sessionStorage.getItem(SAVE_KEY)||'null');
  const okAnswers=s&&s.answers&&typeof s.answers==='object'&&Object.entries(s.answers).every(([k,v])=>/^([1-9]|[12]\d|3[0-6])$/.test(k)&&Number.isInteger(v)&&v>=1&&v<=6);
  if(s&&s.v===1&&Number.isInteger(s.step)&&s.step>=0&&s.step<=5&&okAnswers&&typeof s.id==='string'&&/^[a-zA-Z0-9-]{8,80}$/.test(s.id)){
-  step=s.step;answers=s.answers;gate=s.gate&&typeof s.gate==='object'?s.gate:{};submissionId=s.id;restored=step>0||Object.keys(answers).length>0;
+  step=s.step;answers=s.answers;gate=s.gate&&typeof s.gate==='object'?s.gate:{};submissionId=s.id;if(Number.isFinite(s.startedAt)&&s.startedAt>0)startedAt=s.startedAt;restored=step>0||Object.keys(answers).length>0;
   const n=Object.keys(answers).length;for(const m of [1,9,18,27])if(n>=m)milestones.add(m);
   for(let st=2;st<=5;st++)if(form.sections[st-2].questions.every(q=>answers[q.id]))completedPlates.add(st);
  }}catch{}
@@ -111,7 +114,7 @@ function ending(title,body,success=false){root.classList.add('ending');if(succes
   const cap=el('figcaption');cap.append(el('span','',`PLATE NO. ${serial}`),el('span','',date));card.append(canvas,img,cap);root.append(card);stopPanel=initAmbient(canvas);
   para('星點位置由作答以雜湊方式生成，每一份都不同；不是評分或診斷，旁人也無法從圖反推答案。','note');
   const box=el('div','actions');box.append(save,el('span','save-hint','手機可長按圖片儲存'));root.append(box)}}
-function render(){saveProgress();stopPanel();stopPanel=()=>{};stopScroll();root.classList.remove('content');root.replaceChildren();root.classList.remove('ending','ending-success','atmospheric','question-card','sheet');document.body.dataset.step=String(step);if(step>=2&&step<=5)root.classList.add('question-card');else root.classList.add('sheet');updateProgress();
+function render(){if(step===2&&!startedAt)startedAt=Date.now();saveProgress();stopPanel();stopPanel=()=>{};stopScroll();root.classList.remove('content');root.replaceChildren();root.classList.remove('ending','ending-success','atmospheric','question-card','sheet');document.body.dataset.step=String(step);if(step>=2&&step<=5)root.classList.add('question-card');else root.classList.add('sheet');updateProgress();
  const meta=stepMeta(step);plate.setGlyph(meta.glyph,meta.mode);document.querySelector('#plate-fig').textContent=meta.fig;document.querySelector('#plate-title').textContent=meta.title;
  if(step===0){masthead(meta,null,'虛構角色與 AI 社會支持問卷');renderIntro(form.intro);choices('consent',form.consent,form.consentOptions,gate.consent);actions('進入觀測室 →',false)}
  else if(step===1){masthead(meta,'ELIGIBILITY / 參與資格','填答前，請先確認');para(form.screening,'instruction');choices('screen',form.screeningOptions.length?'請選擇符合情況':'',form.screeningOptions,gate.screen);actions('繼續 →')}
@@ -126,7 +129,7 @@ function render(){saveProgress();stopPanel();stopPanel=()=>{};stopScroll();root.
 async function advance(){if(sending)return;const key=step===0?'consent':step===1?'screen':null;const missing=key?[gate[key]?null:key].filter(Boolean):form.sections[step-2].questions.filter(q=>!answers[q.id]).map(q=>String(q.id));
  if(missing.length){document.querySelector('.error').textContent=`尚有 ${missing.length} 題未選，請選擇後繼續。`;for(const item of missing)document.querySelector(`[data-key="${item}"]`)?.classList.add('invalid');document.querySelector(`[data-key="${missing[0]}"] input`)?.focus();return}
  if(step===0&&gate.consent===2){step=7;render();return}if(step===1&&gate.screen===2){step=8;render();return}
- if(step===5){sending=true;const btn=document.querySelector('.primary');btn.disabled=true;btn.textContent='星圖傳送中…';try{const response=ENDPOINT?await postToSheet():await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:submissionId,answers})});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'伺服器未確認儲存');step=6;render();completionBurst()}catch(err){document.querySelector('.error').textContent=`送出失敗：${err.message}。請保留此頁並重試。`;btn.disabled=false;btn.textContent='重新送出 ✦'}finally{sending=false}return}
+ if(step===5){sending=true;const btn=document.querySelector('.primary');btn.disabled=true;btn.textContent='星圖傳送中…';try{const response=ENDPOINT?await postToSheet():await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'伺服器未確認儲存');step=6;render();completionBurst()}catch(err){document.querySelector('.error').textContent=`送出失敗：${err.message}。請保留此頁並重試。`;btn.disabled=false;btn.textContent='重新送出 ✦'}finally{sending=false}return}
  step++;render()}
 // Keyboard: 1–6 answers the current entry, Enter turns the page, Escape closes the seal.
 let keyboardPick=false;
