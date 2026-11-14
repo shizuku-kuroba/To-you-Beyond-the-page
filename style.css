@@ -4,6 +4,8 @@
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-400.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-500.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
 @font-face{font-family:'Noto Serif TC';src:url('fonts/NotoSerifTC-600.woff2') format('woff2');font-style:normal;font-weight:600;font-display:swap}
+/* Title-only subset (Noto Serif TC 500, OFL 1.1): the glyphs of 致彼方的你 and the research title, so they render in the same serif on every OS. */
+@font-face{font-family:'Noto Serif TC Title';src:url('fonts/NotoSerifTC-Title-500.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
 
 /* R13 · 致彼方的你 — To You, Beyond the Page
    Electric-blue engraved plate (left) / white printed page (right).
@@ -46,9 +48,8 @@ button:focus-visible,a:focus-visible,input:focus-visible+span{outline:3px solid 
 main{max-width:780px;margin:0 auto;padding:clamp(56px,9vh,110px) clamp(22px,5.5vw,84px) 64px}
 footer{padding:24px clamp(22px,5.5vw,84px) 40px;border-top:1px solid var(--rule);color:var(--muted);font:500 12px 'Noto Serif TC',serif;max-width:780px;margin:0 auto}
 footer span{padding:0 10px}
-/* Research title: several glyphs (致彼你擬係化慧) sit outside the Noto Serif TC subset, so the whole line uses the system Song face to stay one typeface. */
 footer p{margin:0}
-.footer-title{font:500 13px/1.8 'Songti TC','STSong','PMingLiU','Noto Serif TC',serif;color:var(--ink);letter-spacing:.04em;margin-bottom:6px}
+.footer-title{font:500 13px/1.8 'Noto Serif TC Title','Noto Serif TC',serif;color:var(--ink);letter-spacing:.04em;margin-bottom:6px}
 
 /* ── Masthead ─────────────────────────────────────────── */
 .content{min-width:0;animation:page-enter .55s cubic-bezier(.2,.7,.2,1) both}
@@ -59,8 +60,7 @@ footer p{margin:0}
 .fig-title{color:var(--accent)}
 .display{font:400 clamp(58px,6.6vw,108px)/.9 'Cormorant Garamond',serif;letter-spacing:-.012em;color:var(--accent);margin:26px 0 34px}
 .display span{display:block}
-/* Title glyphs 致彼你 are outside the Noto Serif TC subset: set the whole title in the system Song face so it stays one typeface. */
-.display-zh{display:block;font:500 clamp(18px,1.7vw,24px)/1.4 'Songti TC','STSong','PMingLiU','Noto Serif TC',serif;font-style:normal;letter-spacing:.42em;color:var(--ink);margin:0 0 18px}
+.display-zh{display:block;font:500 clamp(18px,1.7vw,24px)/1.4 'Noto Serif TC Title','Noto Serif TC',serif;font-style:normal;letter-spacing:.42em;color:var(--ink);margin:0 0 18px}
 .boot-mark .display-zh{color:#fff;margin-bottom:22px;font-size:clamp(18px,2vw,26px)}.display span+span{padding-left:.9em;font-size:.62em;line-height:1.1;margin-top:.12em;color:var(--ink);opacity:.82}
 .eyebrow{font:500 15px 'Cormorant Garamond','Noto Serif TC',serif;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin:0}
 .content h1{font-family:'Cormorant Garamond','Noto Serif TC',serif;font-size:clamp(25px,2.5vw,33px);font-weight:500;letter-spacing:.03em;line-height:1.45;margin:6px 0 26px}
@@ -178,7 +178,9 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
 .progress-meta{display:none}
 .progress-wrap{position:fixed;z-index:30;bottom:calc(20px + env(safe-area-inset-bottom));right:clamp(16px,3vw,44px);width:48px;height:48px;color:#fff}
 .progress-toggle{display:block;width:48px;height:48px;padding:0;border:1px solid #fff;border-radius:50%;background:#0000f2;color:inherit;box-shadow:0 0 0 3px #0000f2,0 8px 24px rgba(0,0,120,.35);transition:transform .25s}
-.progress-toggle:hover,.progress-toggle[aria-expanded=true]{transform:translateY(-2px) rotate(15deg)}
+/* Rotation marks the open state only, so a second tap (or Escape / tapping elsewhere) always turns it back. */
+.progress-toggle[aria-expanded=true]{transform:rotate(15deg)}
+@media(hover:hover) and (pointer:fine){.progress-toggle:hover{transform:translateY(-2px)}.progress-toggle[aria-expanded=true]:hover{transform:translateY(-2px) rotate(15deg)}}
 .progress-wrap.ping .progress-toggle{animation:ping .6s ease-out}
 @keyframes ping{0%{box-shadow:0 0 0 3px #0000f2,0 0 0 3px rgba(0,0,242,.6)}100%{box-shadow:0 0 0 3px #0000f2,0 0 0 18px rgba(0,0,242,0)}}
 .progress-dial{display:block;width:100%;height:100%;overflow:visible}
@@ -193,7 +195,6 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
 .progress-detail #progress-count{font:500 12px 'Noto Serif TC',serif;white-space:nowrap}
 .progress-detail #progress-percent{font:500 16px 'Cormorant Garamond',serif;color:var(--accent)}
 .progress-wrap.is-open .progress-detail{opacity:1;visibility:visible;transform:none;pointer-events:auto}
-@media(hover:hover) and (pointer:fine){.progress-wrap:hover .progress-detail{opacity:1;visibility:visible;transform:none;pointer-events:auto}}
 
 /* ── Responsive: plate becomes a band above the page ──── */
 @media(max-width:900px){
