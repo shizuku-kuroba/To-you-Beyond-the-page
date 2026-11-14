@@ -20,8 +20,12 @@ button:focus-visible,a:focus-visible,input:focus-visible+span{outline:3px solid 
 ::selection{background:#0000f2;color:#fff}
 
 /* ── Stage: plate + paper ─────────────────────────────── */
-.stage{display:grid;grid-template-columns:minmax(380px,44vw) minmax(0,1fr);min-height:100vh}
-.plate{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;isolation:isolate;color:#f2f3ff;background:radial-gradient(110% 80% at 50% 48%,#2424ff 0%,var(--plate) 42%,var(--plate-deep) 100%);touch-action:pan-y}
+/* Desktop: the plate is pinned to the viewport (fixed, not sticky) so nothing appended after the page —
+   e.g. elements injected by browser extensions — can push it out of view at the bottom. */
+:root{--plate-w:max(380px,44vw)}
+.stage{display:block;min-height:100vh}
+.paper{margin-left:var(--plate-w);min-height:100vh}
+.plate{position:fixed;top:0;left:0;width:var(--plate-w);z-index:1;height:100vh;height:100dvh;overflow:hidden;isolation:isolate;color:#f2f3ff;background:radial-gradient(110% 80% at 50% 48%,#2424ff 0%,var(--plate) 42%,var(--plate-deep) 100%);touch-action:pan-y}
 .plate-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .plate-frame{position:absolute;inset:14px;z-index:1;pointer-events:none;border:1px solid rgba(255,255,255,.28)}
 .plate-frame::before,.plate-frame::after{content:'';position:absolute;width:22px;height:22px;background:linear-gradient(#fff,#fff) center/1px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 1px no-repeat;opacity:.7}
@@ -39,7 +43,7 @@ button:focus-visible,a:focus-visible,input:focus-visible+span{outline:3px solid 
 @keyframes log-blink{0%,40%{opacity:.25}50%,100%{opacity:.8}}
 
 .paper{position:relative;min-width:0;background:var(--card)}
-main{max-width:780px;margin:0 auto;padding:clamp(56px,9vh,110px) clamp(22px,5.5vw,84px) 120px}
+main{max-width:780px;margin:0 auto;padding:clamp(56px,9vh,110px) clamp(22px,5.5vw,84px) 64px}
 footer{padding:24px clamp(22px,5.5vw,84px) 40px;border-top:1px solid var(--rule);color:var(--muted);font:500 12px 'Noto Serif TC',serif;max-width:780px;margin:0 auto}
 footer span{padding:0 10px}
 /* Research title: several glyphs (致彼你擬係化慧) sit outside the Noto Serif TC subset, so the whole line uses the system Song face to stay one typeface. */
@@ -133,6 +137,7 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
 .secondary{border:1px solid var(--rule-strong);background:transparent;color:var(--ink)}
 .secondary:hover{border-color:var(--accent);color:var(--accent)}
 .error{color:var(--danger);font-weight:600;min-height:26px;margin:24px 0 0}
+.error:empty{min-height:0;margin:0}
 .save-hint{font:500 12px var(--mono);color:var(--muted)}
 
 /* ── Endings & keepsake ───────────────────────────────── */
@@ -155,7 +160,7 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
 #burst-layer{z-index:20}#scroll-feedback{z-index:6}
 .toast{position:fixed;z-index:40;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translate(-50%,20px);padding:11px 20px;background:#0000f2;color:#fff;border:1px solid rgba(255,255,255,.6);box-shadow:0 0 0 4px #0000f2,0 14px 40px rgba(0,0,120,.35);font:500 13px var(--mono);letter-spacing:.07em;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-@media(min-width:901px){.toast{left:calc(max(380px,44vw) / 2);bottom:150px;background:#fff;color:#0000f2;border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 14px 40px rgba(0,0,80,.4)}}
+@media(min-width:901px){.toast{left:calc(var(--plate-w) / 2);bottom:150px;background:#fff;color:#0000f2;border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 14px 40px rgba(0,0,80,.4)}}
 .toast:empty{display:none}
 
 /* ── Boot: terminal handshake on the blue field ───────── */
@@ -192,8 +197,8 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
 
 /* ── Responsive: plate becomes a band above the page ──── */
 @media(max-width:900px){
- .stage{display:block}
- .plate{position:relative;height:clamp(300px,54vh,440px)}
+ .paper{margin-left:0;min-height:0}
+ .plate{position:relative;width:auto;z-index:auto;height:clamp(300px,54vh,440px)}
  body[data-step="2"] .plate,body[data-step="3"] .plate,body[data-step="4"] .plate,body[data-step="5"] .plate{height:clamp(250px,40vh,340px)}
  .plate-spine{display:none}
  .plate-meta{left:28px;right:28px;bottom:24px}
@@ -207,7 +212,7 @@ kbd{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule-s
  .plate-meta{left:22px;right:22px;bottom:18px;font-size:10px;letter-spacing:.12em}
  .plate-meta #plate-title{font-size:17px;margin-bottom:2px}
  #plate-log{display:none}
- main{padding:34px 18px 96px}footer{padding:22px 18px 90px}
+ main{padding:34px 18px 40px}footer{padding:22px 76px calc(26px + env(safe-area-inset-bottom)) 18px}
  .display{font-size:clamp(46px,14vw,64px);margin:18px 0 24px}
  .content h1{font-size:23px}
  .question{padding:24px 0 28px}
